@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DesafioPedido.Application/DesafioPedido.Application.csproj" Id="569e5728-4a41-463e-af45-e2ebc7c6d158" />
+  <Project Path="DesafioPedido.Domain/DesafioPedido.Domain.csproj" Id="7dd4d799-267f-4da7-b69a-e9e1478b9949" />
+  <Project Path="DesafioPedido.Infrastructure/DesafioPedido.Infrastructure.csproj" Id="16c13ca7-4c43-423c-875b-2172d9486528" />
+  <Project Path="DesafioPedido.Web/DesafioPedido.Web.csproj" Id="b9e09aa9-123c-4fdb-9319-cde8bbc0b494" />
+</Solution>
