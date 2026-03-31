@@ -15,6 +15,10 @@ builder.Services.AddScoped<IDbConnection>(_ =>
 
 builder.Services.AddScoped<IClienteInterface, ClienteService>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IProdutoInterface, ProdutoService>(); 
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoInterface, PedidoService>();
 
 var app = builder.Build();
 

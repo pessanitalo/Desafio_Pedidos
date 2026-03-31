@@ -1,0 +1,16 @@
+﻿@model DesafioPedido.Domain.Entities.Produto
+
+<div class="card" style="max-width: 500px;">
+    <div class="card-header">
+        <h4>@Model.Nome</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Nome:</strong> @Model.Nome</p>
+        <p><strong>Descrição:</strong> @Model.Descricao</p>
+        <p><strong>Quantidade:</strong> @Model.QuantidadeEstoque</p>
+        <p><strong>Preço:</strong> @Model.Preco</p>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>

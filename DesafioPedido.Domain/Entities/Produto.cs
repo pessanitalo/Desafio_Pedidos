@@ -4,11 +4,20 @@
     {
         public int ProdutoId { get; set; }
         public string Nome { get; set; }
-        public string Descrição { get; set; }
-        public string Preço { get; set; }
+        public string Descricao { get; set; }
+        public decimal Preco { get; set; }
         public int QuantidadeEstoque { get; set; }
 
+        public Produto(string nome, string descricao, decimal preco, int quantidadeEstoque)
+        {
+            Nome = nome;
+            Descricao = descricao;
+            Preco = preco;
+            QuantidadeEstoque = quantidadeEstoque;
+        }
+
         public Produto() { }
+
 
     }
 }

@@ -1,0 +1,41 @@
+﻿@model DesafioPedido.Application.DTOs.ProdutoDto
+
+<div class="card" style="max-width: 500px;">
+    <div class="card-header">
+        <h4>Editar Produto</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            
+            <input type="hidden" asp-for="ProdutoId" />
+
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label">Nome</label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descricao" class="form-label">Descrição</label>
+                <input asp-for="Descricao" class="form-control" />
+                <span asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Preco" class="form-label">Preço</label>
+                <input asp-for="Preco" class="form-control" />
+                <span asp-validation-for="Preco" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="QuantidadeEstoque" class="form-label">Quantidade</label>
+                <input asp-for="QuantidadeEstoque" class="form-control" />
+                <span asp-validation-for="QuantidadeEstoque" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+
+        </form>
+    </div>
+</div>
