@@ -1,0 +1,123 @@
+﻿@model DesafioPedido.Web.Models.CriarPedidoViewModel
+
+<div class="card shadow" style="max-width: 700px;">
+    <div class="card-header">
+        <h4>Novo Pedido</h4>
+    </div>
+
+    <div class="card-body">
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p class="mb-0">@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <form method="post" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <!-- Cliente -->
+            <select name="ClienteId" class="form-select">
+                <option value="">Selecione um cliente...</option>
+                @foreach (var cliente in Model.Clientes)
+                {
+                    <option value="@cliente.ClienteId">@cliente.Nome</option>
+                }
+            </select>
+
+            <!-- Itens do Pedido -->
+            <label class="form-label">Produtos</label>
+            <div id="itens">
+                <div class="row g-2 mb-2 item-pedido">
+                    <div class="col-7">
+                        <select name="Itens[0].ProdutoId" class="form-select produto-select">
+                            <option value="">Selecione um produto...</option>
+                            @foreach (var produto in Model.Produtos)
+                            {
+                                <option value="@produto.ProdutoId"
+                                        data-preco="@produto.Preco.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-estoque="@produto.QuantidadeEstoque">
+                                    @produto.Nome — R$ @produto.Preco.ToString("F2") (Estoque: @produto.QuantidadeEstoque)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <input type="number" name="Itens[0].Quantidade"
+                               class="form-control quantidade-input"
+                               placeholder="Qtd" min="1" value="1" />
+                    </div>
+                    <div class="col-2 d-flex align-items-center">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removerItem(this)">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="adicionarItem()">
+                + Adicionar Produto
+            </button>
+
+            <!-- Total -->
+            <div class="alert alert-light border">
+                <strong>Total: R$ <span id="valorTotal">0,00</span></strong>
+            </div>
+
+            <button type="submit" class="btn btn-success">Salvar Pedido</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Lista de produtos para o JS
+        const produtos = {
+                        @foreach (var p in Model.Produtos)
+            {
+                                    @:@p.ProdutoId: { preco: @p.Preco.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), estoque: @p.QuantidadeEstoque },
+        }
+                    };
+
+        let indice = 1;
+
+        function adicionarItem() {
+            const template = document.querySelector('.item-pedido').cloneNode(true);
+            template.querySelectorAll('select, input').forEach(el => {
+                el.name = el.name.replace('[0]', `[${indice}]`);
+                if (el.tagName === 'INPUT') el.value = 1;
+                else el.value = '';
+            });
+            document.getElementById('itens').appendChild(template);
+            indice++;
+            recalcularTotal();
+        }
+
+        function removerItem(btn) {
+            const itens = document.querySelectorAll('.item-pedido');
+            if (itens.length > 1) {
+                btn.closest('.item-pedido').remove();
+                recalcularTotal();
+            }
+        }
+
+        function recalcularTotal() {
+            let total = 0;
+            document.querySelectorAll('.item-pedido').forEach(item => {
+                const produtoId = item.querySelector('.produto-select').value;
+                const qtd = parseInt(item.querySelector('.quantidade-input').value) || 0;
+                if (produtoId && produtos[produtoId]) {
+                    total += produtos[produtoId].preco * qtd;
+                }
+            });
+            document.getElementById('valorTotal').innerText = total.toFixed(2).replace('.', ',');
+        }
+
+        document.addEventListener('change', recalcularTotal);
+        document.addEventListener('input', recalcularTotal);
+    </script>
+}
+

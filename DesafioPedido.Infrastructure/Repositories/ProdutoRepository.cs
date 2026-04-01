@@ -45,9 +45,9 @@ namespace DesafioPedido.Infrastructure.Repositories
         public async Task UpdateAsync(Produto produto)
         {
             const string sql = @"
-                     UPDATE Produtos 
-                     SET Nome = @Nome, Email = @Email, Telefone = @Telefone
-                    WHERE ClienteId = @ClienteId";
+                UPDATE Produtos 
+                SET Nome = @Nome, Descricao = @Descricao, Preco = @Preco, QuantidadeEstoque = @QuantidadeEstoque
+                WHERE ProdutoId = @ProdutoId";
 
             await _connection.ExecuteAsync(sql, produto);
         }

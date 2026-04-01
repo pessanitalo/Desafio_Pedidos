@@ -29,9 +29,9 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nome</th>
-                                        <th>Email</th>
-                                        <th>Telefone</th>
-                                        <th>Data de Cadastro</th>
+                                        <th>Descrição</th>
+                                        <th>Preço</th>
+                                        <th>Quantidade em Estoque</th>
                                         <th class="text-center">Ações</th>
                                     </tr>
                                 </thead>
@@ -44,7 +44,6 @@
                                             <td>@produto.Descricao</td>
                                             <td>@produto.Preco</td>
                                             <td>@produto.QuantidadeEstoque</td>
-
                                             <td class="text-center">
                                                 <a asp-action="Details" asp-route-id="@produto.ProdutoId"
                                                    class="btn btn-sm btn-primary">

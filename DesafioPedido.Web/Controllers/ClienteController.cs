@@ -32,7 +32,7 @@ namespace DesafioPedido.Web.Controllers
 
             await clienteInterface.AddAsync(cliente);
 
-            return RedirectToAction("Clientes");
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Details(int id)

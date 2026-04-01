@@ -1,0 +1,61 @@
+﻿@model DesafioPedido.Domain.DTOs.PedidoDetalhesDTO
+
+<div class="card shadow" style="max-width: 700px;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Detalhes do Pedido #@Model.PedidoId</h4>
+        @{
+            var badge = Model.Status switch
+            {
+                "Novo" => "bg-primary",
+                "Processando" => "bg-warning text-dark",
+                "Finalizado" => "bg-success",
+                _ => "bg-secondary"
+            };
+        }
+        <span class="badge @badge">@Model.Status</span>
+    </div>
+
+    <div class="card-body">
+
+        <!-- Dados do Pedido -->
+        <div class="mb-4">
+            <p><strong>Cliente:</strong> @Model.NomeCliente</p>
+            <p><strong>Data do Pedido:</strong> @Model.DataPedido.ToString("dd/MM/yyyy")</p>
+        </div>
+
+        <!-- Itens do Pedido -->
+        <h5>Itens</h5>
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Itens)
+                {
+                    <tr>
+                        <td>@item.NomeProduto</td>
+                        <td>@item.Quantidade</td>
+                        <td>R$ @item.PrecoUnitario.ToString("F2")</td>
+                        <td>R$ @((item.Quantidade * item.PrecoUnitario).ToString("F2"))</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                    <td><strong>R$ @Model.ValorTotal.ToString("F2")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
