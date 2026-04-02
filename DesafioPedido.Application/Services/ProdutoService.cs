@@ -41,6 +41,12 @@ namespace DesafioPedido.Application.Services
             return Result<IEnumerable<Produto>>.Ok(produtos);
         }
 
+        public async Task<Result<IEnumerable<Produto>>> GetProdutosDisponiveisAsync()
+        {
+            var produtos = await _produtoRepository.GetProdutosDisponiveisAsync();
+            return Result<IEnumerable<Produto>>.Ok(produtos);
+        }
+
         public async Task<Result<Produto>> GetByIdAsync(int id)
         {
             var produto = await _produtoRepository.GetByIdAsync(id);

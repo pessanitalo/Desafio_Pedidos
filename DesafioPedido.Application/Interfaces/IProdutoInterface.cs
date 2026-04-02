@@ -8,6 +8,7 @@ namespace DesafioPedido.Application.Interfaces
     {
         Task<Result<string>> AddAsync(ProdutoDto clienteDTO);
         Task<Result<IEnumerable<Produto>>> GetAllAsync();
+        Task<Result<IEnumerable<Produto>>> GetProdutosDisponiveisAsync();
         Task<Result<Produto>> GetByIdAsync(int id);
         Task<Result<string>> UpdateAsync(ProdutoDto clienteDTO);
         Task<Result<string>> DeleteAsync(int id);

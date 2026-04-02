@@ -36,6 +36,12 @@ namespace DesafioPedido.Infrastructure.Repositories
             return await _connection.QueryAsync<Produto>(sql);
         }
 
+        public async Task<IEnumerable<Produto>> GetProdutosDisponiveisAsync()
+        {
+            const string sql = "SELECT * FROM Produtos WHERE QuantidadeEstoque > 0";
+            return await _connection.QueryAsync<Produto>(sql);
+        }
+
         public async Task<Produto> GetByIdAsync(int id)
         {
             const string sql = "SELECT * FROM Produtos WHERE ProdutoId = @Id";
