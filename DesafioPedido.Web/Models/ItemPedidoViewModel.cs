@@ -1,10 +1,11 @@
-﻿namespace DesafioPedido.Domain.DTOs
+﻿namespace DesafioPedido.Web.Models
 {
-    public class ItemPedidoDetalhesDTO
+    public class ItemPedidoViewModel
     {
-        public string NomeProduto { get; set; }
         public int ProdutoId { get; set; }
+
         public int Quantidade { get; set; }
+
         public decimal PrecoUnitario { get; set; }
     }
 }

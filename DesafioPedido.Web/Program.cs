@@ -36,6 +36,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-US"),
+    SupportedCultures = new[] { new System.Globalization.CultureInfo("en-US") },
+    SupportedUICultures = new[] { new System.Globalization.CultureInfo("pt-BR") }
+});
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

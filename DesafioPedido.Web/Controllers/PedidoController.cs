@@ -1,6 +1,6 @@
 ﻿using DesafioPedido.Application.DTOs;
 using DesafioPedido.Application.Interfaces;
-using DesafioPedido.Domain.Interfaces;
+using DesafioPedido.Domain.Entities;
 using DesafioPedido.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,12 +19,12 @@ namespace DesafioPedido.Web.Controllers
             _produtoInterface = produtoInterface;
         }
 
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(string? nome, string? email)
         {
             var vm = new CriarPedidoViewModel
             {
-                Clientes = (await _clienteInterface.GetAllAsync()).Data,
-                Produtos = (await _produtoInterface.GetAllAsync()).Data
+                Clientes = (await _clienteInterface.GetAllAsync(nome,email)).Data,
+                Produtos = (await _produtoInterface.GetProdutosDisponiveisAsync()).Data
             };
 
             return View(vm);
@@ -34,7 +34,7 @@ namespace DesafioPedido.Web.Controllers
         {
             var vm = new ListarPedidosViewModel
             {
-                Clientes = (await _clienteInterface.GetAllAsync()).Data,
+                Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
                 ClienteIdFiltro = clienteId,
                 StatusFiltro = status
             };
@@ -54,11 +54,10 @@ namespace DesafioPedido.Web.Controllers
 
             if (!result.Success)
             {
-                // recarrega as listas caso dê erro de estoque
                 var vm = new CriarPedidoViewModel
                 {
                     Pedido = pedido,
-                    Clientes = (await _clienteInterface.GetAllAsync()).Data,
+                    Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
                     Produtos = (await _produtoInterface.GetAllAsync()).Data
                 };
                 ModelState.AddModelError("", result.Error);
@@ -66,6 +65,34 @@ namespace DesafioPedido.Web.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var result = await _pedidoInterface.GetByIdAsync(id);
+
+            if (!result.Success)
+                return NotFound();
+
+            var pedido = result.Data;
+
+            var viewModel = new EditarPedidoViewModel
+            {
+                PedidoId = pedido.PedidoId,
+                ClienteId = pedido.ClienteId,
+
+                Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
+                Produtos = (await _produtoInterface.GetAllAsync()).Data,
+
+                Itens = pedido.Itens.Select(i => new ItemPedidoViewModel
+                {
+                    ProdutoId = i.ProdutoId,
+                    Quantidade = i.Quantidade,
+                    PrecoUnitario = i.PrecoUnitario
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -84,6 +111,51 @@ namespace DesafioPedido.Web.Controllers
         {
             await _pedidoInterface.DeleteAsync(id);
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditarPedidoViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
+                model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
+
+                return View(model);
+            }
+
+            try
+            {
+                var pedido = new Pedido
+                {
+                    PedidoId = model.PedidoId,
+                    ClienteId = model.ClienteId,
+                    DataPedido = DateTime.Now,
+                    Status = "Atualizado",     
+                    ValorTotal = model.Itens.Sum(i => i.Quantidade * i.PrecoUnitario)
+                };
+
+                var itens = model.Itens.Select(i => new ItemPedido
+                {
+                    ProdutoId = i.ProdutoId,
+                    Quantidade = i.Quantidade,
+                    PrecoUnitario = i.PrecoUnitario
+                }).ToList();
+
+                await _pedidoInterface.UpdateAsync(pedido, itens);
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Erro ao atualizar o pedido.");
+
+                model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
+                model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
+
+                return View(model);
+            }
         }
     }
 }
