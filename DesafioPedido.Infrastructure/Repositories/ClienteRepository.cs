@@ -30,10 +30,19 @@ namespace DesafioPedido.Infrastructure.Repositories
             await _connection.ExecuteAsync(sql, new { Id = id });
         }
 
-        public async Task<IEnumerable<Cliente>> GetAllAsync()
+        public async Task<IEnumerable<Cliente>> GetAllAsync(string? nome, string? email)
         {
-            const string sql = "SELECT * FROM Clientes";
-            return await _connection.QueryAsync<Cliente>(sql);
+            const string sql = @"
+                SELECT * FROM Clientes
+                WHERE (@Nome IS NULL OR Nome LIKE @Nome)
+                  AND (@Email IS NULL OR Email LIKE @Email)
+                ORDER BY Nome";
+
+            return await _connection.QueryAsync<Cliente>(sql, new
+            {
+                Nome = string.IsNullOrWhiteSpace(nome) ? null : $"%{nome}%",
+                Email = string.IsNullOrWhiteSpace(email) ? null : $"%{email}%"
+            });
         }
 
         public async Task<Cliente> GetByIdAsync(int id)
@@ -44,9 +53,9 @@ namespace DesafioPedido.Infrastructure.Repositories
 
         public async Task UpdateAsync(Cliente cliente)
         {
-                const string sql = @"
+            const string sql = @"
                      UPDATE Clientes 
-                     SET Nome = @Nome, Email = @Email, Telefone = @Telefone
+                     SET Nome = @Nome, Email = @Email, Telefone = @Telefone, DataCadastro = @DataCadastro
                     WHERE ClienteId = @ClienteId";
 
             await _connection.ExecuteAsync(sql, cliente);

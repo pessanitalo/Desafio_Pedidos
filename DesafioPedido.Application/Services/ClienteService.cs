@@ -35,10 +35,19 @@ namespace DesafioPedido.Application.Services
             return Result<string>.Ok("Cliente excluído com sucesso.");
         }
 
-        public async Task<Result<IEnumerable<Cliente>>> GetAllAsync()
+        public async Task<Result<IEnumerable<ClienteDTO>>> GetAllAsync(string? nome, string? email)
         {
-            var clientes = await _clienteRepository.GetAllAsync();
-            return Result<IEnumerable<Cliente>>.Ok(clientes);
+            var clientes = await _clienteRepository.GetAllAsync(nome,email);
+
+            var clientesDto = clientes.Select(p => new ClienteDTO
+            {
+                ClienteId = p.ClienteId,
+                Nome = p.Nome,
+                Email = p.Email,
+                Telefone = p.Telefone,
+                DataCadastro = p.DataCadastro,
+            });
+            return Result<IEnumerable<ClienteDTO>>.Ok(clientesDto);
         }
 
         public async Task<Result<Cliente>> GetByIdAsync(int id)
@@ -61,6 +70,7 @@ namespace DesafioPedido.Application.Services
             cliente.Nome = clienteDTO.Nome;
             cliente.Email = clienteDTO.Email;
             cliente.Telefone = clienteDTO.Telefone;
+            cliente.DataCadastro = DateTime.Now;
 
             await _clienteRepository.UpdateAsync(cliente);
             return Result<string>.Ok("Cliente atualizado com sucesso.");
