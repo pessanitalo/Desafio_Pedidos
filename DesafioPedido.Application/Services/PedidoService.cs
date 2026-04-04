@@ -23,7 +23,13 @@ namespace DesafioPedido.Application.Services
         {
             // Valida estoque de cada item
             if (pedidoDTO.ClienteId == 0)
-                return Result<string>.Fail("Selecione um cliente.");
+                return Result<string>.Fail("Você deve selecionar um cliente.");
+
+            foreach (var item in pedidoDTO.Itens)
+            {
+                if (item.ProdutoId == 0) return Result<string>.Fail("Você deve selecionar um produto.");
+            }
+
 
             foreach (var item in pedidoDTO.Itens)
             {
@@ -37,7 +43,6 @@ namespace DesafioPedido.Application.Services
             }
 
             // Calcula total e salva
-            decimal valorTotal = 0;
             var pedido = new Pedido
             {
                 ClienteId = pedidoDTO.ClienteId,
@@ -53,22 +58,21 @@ namespace DesafioPedido.Application.Services
 
                 var itemPedido = new ItemPedido
                 {
-                    PedidoId = pedidoId, // aqui também passando o ai
+                    PedidoId = pedidoId,
                     ProdutoId = item.ProdutoId,
                     Quantidade = item.Quantidade,
                     PrecoUnitario = produto.Preco
                 };
 
-                valorTotal += produto.Preco * item.Quantidade;
-
+                pedido.Itens.Add(itemPedido);
                 await _pedidoRepository.AddItemAsync(itemPedido);
 
-                // Desconta do estoque
                 produto.QuantidadeEstoque -= item.Quantidade;
                 await _produtoRepository.UpdateAsync(produto);
             }
 
-            await _pedidoRepository.UpdateTotalAsync(pedidoId, valorTotal); 
+            pedido.AtualizarTotal();
+            await _pedidoRepository.UpdateTotalAsync(pedidoId, pedido.ValorTotal);
 
             return Result<string>.Ok("Pedido criado com sucesso.");
         }
@@ -105,6 +109,51 @@ namespace DesafioPedido.Application.Services
             {
                 return Result<PedidoDetalhesDTO>.Fail($"Erro ao buscar pedido: {ex.Message}");
             }
+        }
+
+        public async Task UpdateAsync(EditarPedidoDTO pedidoDto)
+        {
+            var itenPedido = await _pedidoRepository.GetByIdAsync(pedidoDto.PedidoId);
+
+            // REMOVER OS ITENS
+            await _pedidoRepository.GetItenByIdAsync(pedidoDto.PedidoId);
+
+            var pedido = new Pedido
+            {
+                PedidoId = pedidoDto.PedidoId,
+                ClienteId = pedidoDto.ClienteId,
+                DataPedido = DateTime.Now,
+                Status = "Atualizado",
+            };
+
+            // adicionar os novos itens
+            foreach (var item in pedidoDto.Itens)
+            {
+                var itemPedido = new ItemPedido
+                {
+                    PedidoId = itenPedido.PedidoId,
+                    ProdutoId = item.ProdutoId,
+                    Quantidade = item.Quantidade,
+                    PrecoUnitario = item.PrecoUnitario
+                };
+
+                // até aqui esta funcionando!
+                // add os novos itens e salva na tabela
+                pedido.Itens.Add(itemPedido);
+                await _pedidoRepository.AddItemAsync(itemPedido);
+
+                // atualiza o estoque do produto
+                var produto = await _produtoRepository.GetByIdAsync(item.ProdutoId);
+                produto.QuantidadeEstoque -= item.Quantidade;
+                await _produtoRepository.UpdateAsync(produto);
+            }
+
+            pedido.AtualizarTotal();
+            await _pedidoRepository.UpdateAsync(pedido);
+
+            // atualiza o valor total do pedido
+            await _pedidoRepository.UpdateTotalAsync(pedido.PedidoId, pedido.ValorTotal);
+
         }
     }
 }
