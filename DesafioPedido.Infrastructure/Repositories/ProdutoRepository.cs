@@ -57,5 +57,15 @@ namespace DesafioPedido.Infrastructure.Repositories
 
             await _connection.ExecuteAsync(sql, produto);
         }
+
+        public async Task UpdadeBalanceProductAsync(int produtoId, int quantidade)
+        {
+            const string sql = @"
+            UPDATE Produtos 
+            SET QuantidadeEstoque = @quantidade
+            WHERE ProdutoId = @ProdutoId";
+
+            await _connection.ExecuteAsync(sql, new { ProdutoId = produtoId, quantidade = quantidade });
+        }
     }
 }

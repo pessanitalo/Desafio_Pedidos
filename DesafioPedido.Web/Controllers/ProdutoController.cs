@@ -1,5 +1,6 @@
 ﻿using DesafioPedido.Application.DTOs;
 using DesafioPedido.Application.Interfaces;
+using DesafioPedido.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DesafioPedido.Web.Controllers
@@ -38,14 +39,24 @@ namespace DesafioPedido.Web.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var result = await _produtoInterface.GetByIdAsync(id);
-            return View(result.Data);
+
+            var produtoViewModel = new ProdutoViewModel
+            {
+                ProdutoId = result.Data.ProdutoId,
+                Nome = result.Data.Nome,
+                Descricao = result.Data.Descricao,
+                Preco = result.Data.Preco,
+                QuantidadeEstoque = result.Data.QuantidadeEstoque,
+            };
+
+            return View(produtoViewModel);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
             var result = await _produtoInterface.GetByIdAsync(id);
 
-            var produtoDTO = new ProdutoDto
+            var produtoDTO = new ProdutoViewModel
             {
                 ProdutoId = result.Data.ProdutoId,
                 Nome = result.Data.Nome,
@@ -55,6 +66,14 @@ namespace DesafioPedido.Web.Controllers
             };
 
             return View(produtoDTO);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ProdutoDto dt)
+        {
+            await _produtoInterface.UpdateAsync(dt);
+            return RedirectToAction("Index");
         }
 
         [HttpPost]

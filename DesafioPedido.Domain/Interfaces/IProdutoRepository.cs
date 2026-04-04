@@ -9,6 +9,7 @@ namespace DesafioPedido.Domain.Interfaces
         Task<IEnumerable<Produto>> GetProdutosDisponiveisAsync();
         Task<Produto> GetByIdAsync(int id);
         Task UpdateAsync(Produto cliente);
+        Task UpdadeBalanceProductAsync(int produtoId, int quantidade);
         Task DeleteAsync(int id);
     }
 }

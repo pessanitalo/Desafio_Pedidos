@@ -35,26 +35,51 @@ namespace DesafioPedido.Application.Services
             return Result<string>.Ok("Cliente excluído com sucesso.");
         }
 
-        public async Task<Result<IEnumerable<Produto>>> GetAllAsync()
+        public async Task<Result<IEnumerable<ProdutoDto>>> GetAllAsync()
         {
             var produtos = await _produtoRepository.GetAllAsync();
-            return Result<IEnumerable<Produto>>.Ok(produtos);
+            var produtosDto = produtos.Select(p => new ProdutoDto
+            {
+                ProdutoId = p.ProdutoId,
+                Nome = p.Nome,
+                Descricao = p.Descricao,
+                Preco = p.Preco,
+                QuantidadeEstoque = p.QuantidadeEstoque
+            });
+            return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
         }
 
-        public async Task<Result<IEnumerable<Produto>>> GetProdutosDisponiveisAsync()
+        public async Task<Result<IEnumerable<ProdutoDto>>> GetProdutosDisponiveisAsync()
         {
             var produtos = await _produtoRepository.GetProdutosDisponiveisAsync();
-            return Result<IEnumerable<Produto>>.Ok(produtos);
+            var produtosDto = produtos.Select(p => new ProdutoDto
+            {
+                ProdutoId = p.ProdutoId,
+                Nome = p.Nome,
+                Descricao = p.Descricao,
+                Preco = p.Preco,
+                QuantidadeEstoque = p.QuantidadeEstoque
+            });
+            return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
         }
 
-        public async Task<Result<Produto>> GetByIdAsync(int id)
+        public async Task<Result<ProdutoDto>> GetByIdAsync(int id)
         {
             var produto = await _produtoRepository.GetByIdAsync(id);
 
             if (produto is null)
-                return Result<Produto>.Fail("Cliente não encontrado.");
+                return Result<ProdutoDto>.Fail("Produto não encontrado.");
 
-            return Result<Produto>.Ok(produto);
+            var produtoDto = new ProdutoDto
+            {
+                ProdutoId = produto.ProdutoId,
+                Nome = produto.Nome,
+                Descricao = produto.Descricao,
+                Preco = produto.Preco,
+                QuantidadeEstoque = produto.QuantidadeEstoque
+            };
+
+            return Result<ProdutoDto>.Ok(produtoDto);
         }
 
         public async Task<Result<string>> UpdateAsync(ProdutoDto produtoDTO)
@@ -67,6 +92,7 @@ namespace DesafioPedido.Application.Services
             produto.Nome = produtoDTO.Nome;
             produto.Descricao = produtoDTO.Descricao;
             produto.Preco = produtoDTO.Preco;
+            produto.QuantidadeEstoque = produtoDTO.QuantidadeEstoque;
 
             await _produtoRepository.UpdateAsync(produto);
             return Result<string>.Ok("Cliente atualizado com sucesso.");
