@@ -10,6 +10,6 @@ namespace DesafioPedido.Application.Interfaces
         Task<Result<string>> AddAsync(PedidoDTO pedidoDTO);
         Task<Result<PedidoDetalhesDTO>> GetByIdAsync(int id);
         Task<Result<string>> DeleteAsync(int id);
-        Task UpdateAsync(EditarPedidoDTO pedido);
+        Task<Result<string>> UpdateAsync(EditarPedidoDTO pedido);
     }
 }

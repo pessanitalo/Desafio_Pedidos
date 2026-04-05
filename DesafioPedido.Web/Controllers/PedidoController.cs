@@ -1,6 +1,7 @@
 ﻿using DesafioPedido.Application.DTOs;
 using DesafioPedido.Application.Interfaces;
 using DesafioPedido.Domain.Entities;
+using DesafioPedido.Domain.Validation;
 using DesafioPedido.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,22 +10,22 @@ namespace DesafioPedido.Web.Controllers
     public class PedidoController : Controller
     {
         private readonly IPedidoInterface _pedidoInterface;
-        private readonly IClienteInterface  _clienteInterface;
+        private readonly IClienteInterface _clienteInterface;
         private readonly IProdutoInterface _produtoInterface;
 
         public PedidoController(IPedidoInterface pedidoInterface, IClienteInterface clienteInterface, IProdutoInterface produtoInterface)
         {
             _pedidoInterface = pedidoInterface;
-            _clienteInterface = clienteInterface;   
+            _clienteInterface = clienteInterface;
             _produtoInterface = produtoInterface;
         }
 
-        public async Task<IActionResult> Create(string? nome, string? email)
+        public async Task<IActionResult> Create()
         {
             var vm = new CriarPedidoViewModel
             {
-                Clientes = (await _clienteInterface.GetAllAsync(nome,email)).Data,
-                Produtos = (await _produtoInterface.GetProdutosDisponiveisAsync()).Data
+                Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
+                Produtos = (await _produtoInterface.GetProdutosDisponiveisAsync()).Data,
             };
 
             return View(vm);
@@ -48,22 +49,32 @@ namespace DesafioPedido.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(PedidoDTO pedido)
+        public async Task<IActionResult> Create(CriarPedidoViewModel viewModel)
         {
-            var result = await _pedidoInterface.AddAsync(pedido);
+            var pedidoDto = new PedidoDTO
+            {
+                ClienteId = viewModel.ClienteId,
+                Itens = viewModel.Pedido.Itens
+            };
+
+            var result = await _pedidoInterface.AddAsync(pedidoDto);
 
             if (!result.Success)
             {
                 var vm = new CriarPedidoViewModel
                 {
-                    Pedido = pedido,
+                    Pedido = viewModel.Pedido,
+                    ClienteId = viewModel.ClienteId,
                     Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
-                    Produtos = (await _produtoInterface.GetAllAsync()).Data
+                    Produtos = (await _produtoInterface.GetAllAsync()).Data,
                 };
                 ModelState.AddModelError("", result.Error);
                 return View(vm);
             }
 
+            TempData["ToastMessage"] = result.Data ?? "Pedido criado com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
 
@@ -82,10 +93,11 @@ namespace DesafioPedido.Web.Controllers
                 ClienteId = pedido.ClienteId,
 
                 Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data,
-                Produtos = (await _produtoInterface.GetAllAsync()).Data,
+                Produtos = (await _produtoInterface.GetProdutosDisponiveisAsync()).Data,
 
                 Itens = pedido.Itens.Select(i => new ItemPedidoViewModel
                 {
+                    ItemId = i.ItemId,
                     ProdutoId = i.ProdutoId,
                     Quantidade = i.Quantidade,
                     PrecoUnitario = i.PrecoUnitario
@@ -95,12 +107,59 @@ namespace DesafioPedido.Web.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditarPedidoViewModel model)
+        {
+            try
+            {
+                var dto = new EditarPedidoDTO
+                {
+                    PedidoId = model.PedidoId,
+                    ClienteId = model.ClienteId,
+                    Itens = model.Itens.Select(i => new ItemPedidoDTO
+                    {
+                        ItemId = i.ItemId > 0 ? i.ItemId : 0,
+                        ProdutoId = i.ProdutoId,
+                        Quantidade = i.Quantidade,
+                        PrecoUnitario = i.PrecoUnitario
+                    }).ToList()
+                };
+
+                var result = await _pedidoInterface.UpdateAsync(dto);
+                if (!result.Success)
+                {
+                    ModelState.Clear();
+                    ModelState.AddModelError("", result.Error);
+                    model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
+                    model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
+                    return View(model);
+                }
+
+                TempData["ToastMessage"] = "Pedido atualizado com sucesso.";
+                TempData["ToastType"] = "success";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
+                model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
+                return View(model);
+            }
+        }
+
         public async Task<IActionResult> Details(int id)
         {
             var result = await _pedidoInterface.GetByIdAsync(id);
 
             if (!result.Success)
-                return NotFound();
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao atualizar o pedido.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
 
             return View(result.Data);
         }
@@ -109,53 +168,20 @@ namespace DesafioPedido.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _pedidoInterface.DeleteAsync(id);
+            var result = await _pedidoInterface.DeleteAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao excluir o pedido.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+
+            TempData["ToastMessage"] = result.Data ?? "Pedido excluido com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EditarPedidoViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
-                model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
-
-                return View(model);
-            }
-
-            try
-            {
-                var pedido = new Pedido
-                {
-                    PedidoId = model.PedidoId,
-                    ClienteId = model.ClienteId,
-                    DataPedido = DateTime.Now,
-                    Status = "Atualizado",     
-                    ValorTotal = model.Itens.Sum(i => i.Quantidade * i.PrecoUnitario)
-                };
-
-                var itens = model.Itens.Select(i => new ItemPedido
-                {
-                    ProdutoId = i.ProdutoId,
-                    Quantidade = i.Quantidade,
-                    PrecoUnitario = i.PrecoUnitario
-                }).ToList();
-
-                await _pedidoInterface.UpdateAsync(pedido, itens);
-
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Erro ao atualizar o pedido.");
-
-                model.Clientes = (await _clienteInterface.GetAllAsync(null, null)).Data;
-                model.Produtos = (await _produtoInterface.GetAllAsync()).Data;
-
-                return View(model);
-            }
-        }
     }
 }
