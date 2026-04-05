@@ -1,6 +1,5 @@
 ﻿using DesafioPedido.Application.DTOs;
 using DesafioPedido.Application.Interfaces;
-using DesafioPedido.Domain.Entities;
 using DesafioPedido.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +29,7 @@ namespace DesafioPedido.Web.Controllers
                 EmailFiltro = email
             };
 
-            return View(vm); 
+            return View(vm);
         }
 
         [HttpPost]
@@ -47,12 +46,27 @@ namespace DesafioPedido.Web.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var result = await clienteInterface.GetByIdAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao pesquisar o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
             return View(result.Data);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
             var result = await clienteInterface.GetByIdAsync(id);
+
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao pesquisar o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
 
             var clienteDTO = new ClienteDTO
             {
@@ -69,7 +83,19 @@ namespace DesafioPedido.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ClienteDTO dt)
         {
-            await clienteInterface.UpdateAsync(dt);
+            var result = await clienteInterface.UpdateAsync(dt);
+
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao atualizar cliente";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+
+            TempData["ToastMessage"] = result.Data ?? "Cliente atualizado com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
 
@@ -77,7 +103,17 @@ namespace DesafioPedido.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await clienteInterface.DeleteAsync(id);
+            var result = await clienteInterface.DeleteAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Data ?? "Não foi possível excluir o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+            TempData["ToastMessage"] = result.Data ?? "Cliente excluido com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
     }

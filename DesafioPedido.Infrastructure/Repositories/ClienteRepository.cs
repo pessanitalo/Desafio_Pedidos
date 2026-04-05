@@ -47,8 +47,9 @@ namespace DesafioPedido.Infrastructure.Repositories
 
         public async Task<Cliente> GetByIdAsync(int id)
         {
-            const string sql = "SELECT * FROM Clientes WHERE ClienteId = @Id";
-            return await _connection.QueryFirstOrDefaultAsync<Cliente>(sql, new { Id = id });
+            const string sql = "SELECT * FROM Clientes WHERE ClienteId = @ClienteId";
+            return await _connection.QueryFirstOrDefaultAsync<Cliente>(sql, new { ClienteId = id });
+
         }
 
         public async Task UpdateAsync(Cliente cliente)
