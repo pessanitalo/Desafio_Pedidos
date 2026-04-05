@@ -7,7 +7,7 @@ namespace DesafioPedido.Web.Controllers
 {
     public class ProdutoController : Controller
     {
-        private readonly IProdutoInterface  _produtoInterface;
+        private readonly IProdutoInterface _produtoInterface;
 
         public ProdutoController(IProdutoInterface produtoInterface)
         {
@@ -55,6 +55,13 @@ namespace DesafioPedido.Web.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var result = await _produtoInterface.GetByIdAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao pesquisar o produto.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
 
             var produtoDTO = new ProdutoViewModel
             {
@@ -72,7 +79,18 @@ namespace DesafioPedido.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProdutoDto dt)
         {
-            await _produtoInterface.UpdateAsync(dt);
+            var result = await _produtoInterface.UpdateAsync(dt);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Não foi possível editar o produto.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+
+            TempData["ToastMessage"] = result.Data ?? "Produto atualizado com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
 
@@ -80,7 +98,17 @@ namespace DesafioPedido.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _produtoInterface.DeleteAsync(id);
+            var result = await _produtoInterface.DeleteAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Não foi possível excluir o produto.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+            TempData["ToastMessage"] = result.Data ?? "Produto ecluido com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
             return RedirectToAction("Index");
         }
     }

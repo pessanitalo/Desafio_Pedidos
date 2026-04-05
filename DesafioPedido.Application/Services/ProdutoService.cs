@@ -8,7 +8,7 @@ namespace DesafioPedido.Application.Services
 {
     public class ProdutoService : IProdutoInterface
     {
-        private readonly IProdutoRepository  _produtoRepository;
+        private readonly IProdutoRepository _produtoRepository;
 
         public ProdutoService(IProdutoRepository produtoRepository)
         {
@@ -17,85 +17,129 @@ namespace DesafioPedido.Application.Services
 
         public async Task<Result<string>> AddAsync(ProdutoDto produtoDTO)
         {
-
-            var produto = new Produto(produtoDTO.Nome, produtoDTO.Descricao, produtoDTO.Preco, produtoDTO.QuantidadeEstoque);
-            await _produtoRepository.CreateAsync(produto);
-            return Result<string>.Ok("Cliente salvo com sucesso.");
+            try
+            {
+                var produto = new Produto(produtoDTO.Nome, produtoDTO.Descricao, produtoDTO.Preco, produtoDTO.QuantidadeEstoque);
+                await _produtoRepository.CreateAsync(produto);
+                return Result<string>.Ok("Produto salvo com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Fail($"Não foi possível adicionar o produto: {ex.Message}");
+            }
 
         }
 
         public async Task<Result<string>> DeleteAsync(int id)
         {
-            var cliente = await _produtoRepository.GetByIdAsync(id);
 
-            if (cliente is null)
-                return Result<string>.Fail("Cliente não encontrado.");
+            try
+            {
+                var produto = await _produtoRepository.GetByIdAsync(id);
 
-            await _produtoRepository.DeleteAsync(id);
-            return Result<string>.Ok("Cliente excluído com sucesso.");
+                if (produto is null)
+                    return Result<string>.Fail("Produto não encontrado.");
+
+                await _produtoRepository.DeleteAsync(id);
+                return Result<string>.Ok("Produto excluído com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Fail($"Não foi possível remover o produto: {ex.Message}");
+            }
         }
 
         public async Task<Result<IEnumerable<ProdutoDto>>> GetAllAsync()
         {
-            var produtos = await _produtoRepository.GetAllAsync();
-            var produtosDto = produtos.Select(p => new ProdutoDto
+            try
             {
-                ProdutoId = p.ProdutoId,
-                Nome = p.Nome,
-                Descricao = p.Descricao,
-                Preco = p.Preco,
-                QuantidadeEstoque = p.QuantidadeEstoque
-            });
-            return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
+                var produtos = await _produtoRepository.GetAllAsync();
+                var produtosDto = produtos.Select(p => new ProdutoDto
+                {
+                    ProdutoId = p.ProdutoId,
+                    Nome = p.Nome,
+                    Descricao = p.Descricao,
+                    Preco = p.Preco,
+                    QuantidadeEstoque = p.QuantidadeEstoque
+                });
+                return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<ProdutoDto>>.Fail($"Não foi possível pesquisar os produtos: {ex.Message}");
+            }
         }
 
         public async Task<Result<IEnumerable<ProdutoDto>>> GetProdutosDisponiveisAsync()
         {
-            var produtos = await _produtoRepository.GetProdutosDisponiveisAsync();
-            var produtosDto = produtos.Select(p => new ProdutoDto
+            try
             {
-                ProdutoId = p.ProdutoId,
-                Nome = p.Nome,
-                Descricao = p.Descricao,
-                Preco = p.Preco,
-                QuantidadeEstoque = p.QuantidadeEstoque
-            });
-            return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
+                var produtos = await _produtoRepository.GetProdutosDisponiveisAsync();
+                var produtosDto = produtos.Select(p => new ProdutoDto
+                {
+                    ProdutoId = p.ProdutoId,
+                    Nome = p.Nome,
+                    Descricao = p.Descricao,
+                    Preco = p.Preco,
+                    QuantidadeEstoque = p.QuantidadeEstoque
+                });
+                return Result<IEnumerable<ProdutoDto>>.Ok(produtosDto);
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<ProdutoDto>>.Fail($"Não foi possível pesquisar os produtos disponíveis: {ex.Message}");
+            }
         }
 
         public async Task<Result<ProdutoDto>> GetByIdAsync(int id)
         {
-            var produto = await _produtoRepository.GetByIdAsync(id);
 
-            if (produto is null)
-                return Result<ProdutoDto>.Fail("Produto não encontrado.");
-
-            var produtoDto = new ProdutoDto
+            try
             {
-                ProdutoId = produto.ProdutoId,
-                Nome = produto.Nome,
-                Descricao = produto.Descricao,
-                Preco = produto.Preco,
-                QuantidadeEstoque = produto.QuantidadeEstoque
-            };
+                var produto = await _produtoRepository.GetByIdAsync(id);
 
-            return Result<ProdutoDto>.Ok(produtoDto);
+                if (produto is null)
+                    return Result<ProdutoDto>.Fail("Produto não encontrado.");
+
+                var produtoDto = new ProdutoDto
+                {
+                    ProdutoId = produto.ProdutoId,
+                    Nome = produto.Nome,
+                    Descricao = produto.Descricao,
+                    Preco = produto.Preco,
+                    QuantidadeEstoque = produto.QuantidadeEstoque
+                };
+
+                return Result<ProdutoDto>.Ok(produtoDto);
+            }
+            catch (Exception ex)
+            {
+                return Result<ProdutoDto>.Fail($"Não foi possível pesquisar o produto: {ex.Message}");
+            }
         }
 
         public async Task<Result<string>> UpdateAsync(ProdutoDto produtoDTO)
         {
-            var produto = await _produtoRepository.GetByIdAsync(produtoDTO.ProdutoId);
 
-            if (produto is null)
-                return Result<string>.Fail("Cliente não encontrado.");
+            try
+            {
+                var produto = await _produtoRepository.GetByIdAsync(produtoDTO.ProdutoId);
 
-            produto.Nome = produtoDTO.Nome;
-            produto.Descricao = produtoDTO.Descricao;
-            produto.Preco = produtoDTO.Preco;
-            produto.QuantidadeEstoque = produtoDTO.QuantidadeEstoque;
+                if (produto is null)
+                    return Result<string>.Fail("Produto não encontrado.");
 
-            await _produtoRepository.UpdateAsync(produto);
-            return Result<string>.Ok("Cliente atualizado com sucesso.");
+                produto.Nome = produtoDTO.Nome;
+                produto.Descricao = produtoDTO.Descricao;
+                produto.Preco = produtoDTO.Preco;
+                produto.QuantidadeEstoque = produtoDTO.QuantidadeEstoque;
+
+                await _produtoRepository.UpdateAsync(produto);
+                return Result<string>.Ok("Produto atualizado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Fail($"Não foi possível atualizar o Produto: {ex.Message}");
+            }
         }
     }
 }
