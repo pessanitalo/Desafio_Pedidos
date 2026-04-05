@@ -61,5 +61,23 @@ namespace DesafioPedido.Infrastructure.Repositories
 
             await _connection.ExecuteAsync(sql, cliente);
         }
+
+        public async Task<bool> ClienteTemPedido(int id)
+        {
+            const string sql = @"
+                SELECT CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM Pedidos 
+                        WHERE ClienteId = @Id
+                    ) 
+                    THEN 1 
+                    ELSE 0 
+                END";
+
+            var result = await _connection.ExecuteScalarAsync<int>(sql, new { Id = id });
+
+            return result == 1;
+        }
     }
 }

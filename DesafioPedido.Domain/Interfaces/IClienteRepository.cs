@@ -9,5 +9,6 @@ namespace DesafioPedido.Domain.Interfaces
         Task<Cliente> GetByIdAsync(int id);
         Task UpdateAsync(Cliente cliente);
         Task DeleteAsync(int id);
+        Task<bool> ClienteTemPedido(int id);
     }
 }

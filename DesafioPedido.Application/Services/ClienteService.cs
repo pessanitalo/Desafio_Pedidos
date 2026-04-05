@@ -35,6 +35,11 @@ namespace DesafioPedido.Application.Services
         {
             try
             {
+                var clienteTemPedido = await _clienteRepository.ClienteTemPedido(id);
+
+                if (clienteTemPedido == true)
+                    return Result<string>.Fail("Não é possível remover um cliente, pois ele possui um pedido.");
+
                 var cliente = await _clienteRepository.GetByIdAsync(id);
 
                 if (cliente is null)
@@ -72,7 +77,7 @@ namespace DesafioPedido.Application.Services
         }
 
         public async Task<Result<Cliente>> GetByIdAsync(int id)
-        {         
+        {
             try
             {
                 var cliente = await _clienteRepository.GetByIdAsync(id);

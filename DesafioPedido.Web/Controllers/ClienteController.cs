@@ -106,7 +106,7 @@ namespace DesafioPedido.Web.Controllers
             var result = await clienteInterface.DeleteAsync(id);
             if (!result.Success)
             {
-                TempData["ToastMessage"] = result.Data ?? "Não foi possível excluir o cliente.";
+                TempData["ToastMessage"] = result.Error ?? "Não foi possível excluir o cliente.";
                 TempData["ToastType"] = "error";
                 TempData.Keep();
                 return RedirectToAction("Index");
