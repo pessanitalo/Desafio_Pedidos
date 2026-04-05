@@ -153,7 +153,7 @@ namespace DesafioPedido.Application.Services
                     var pedido = await _pedidoRepository.GetPedidoByIdAsync(pedidoDto.PedidoId);
 
                     pedido.ClienteId = pedidoDto.ClienteId;
-                    pedido.Status = "Atualizado";
+                    pedido.Status = "Processando";
                     pedido.DataPedido = DateTime.Now;
 
                     foreach (var itemDto in pedidoDto.Itens)
