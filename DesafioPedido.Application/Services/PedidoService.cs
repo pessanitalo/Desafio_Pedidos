@@ -113,46 +113,85 @@ namespace DesafioPedido.Application.Services
 
         public async Task UpdateAsync(EditarPedidoDTO pedidoDto)
         {
-            var itenPedido = await _pedidoRepository.GetByIdAsync(pedidoDto.PedidoId);
 
-            // REMOVER OS ITENS
-            await _pedidoRepository.GetItenByIdAsync(pedidoDto.PedidoId);
+            var historicoItens = await _pedidoRepository.GetItensByIdAsync(pedidoDto.PedidoId);
 
-            var pedido = new Pedido
+            bool itensIguais = historicoItens.Select(x => new { x.ProdutoId, x.Quantidade })
+                .SequenceEqual(pedidoDto.Itens.Select(x => new { x.ProdutoId, x.Quantidade }));
+
+            var itensRemovidos = historicoItens
+                   .Where(antigo => !pedidoDto.Itens.Any(novo => novo.ProdutoId == antigo.ProdutoId))
+                   .ToList();
+
+
+  
+            foreach (var item in itensRemovidos)
             {
-                PedidoId = pedidoDto.PedidoId,
-                ClienteId = pedidoDto.ClienteId,
-                DataPedido = DateTime.Now,
-                Status = "Atualizado",
-            };
-
-            // adicionar os novos itens
-            foreach (var item in pedidoDto.Itens)
-            {
-                var itemPedido = new ItemPedido
-                {
-                    PedidoId = itenPedido.PedidoId,
-                    ProdutoId = item.ProdutoId,
-                    Quantidade = item.Quantidade,
-                    PrecoUnitario = item.PrecoUnitario
-                };
-
-                // até aqui esta funcionando!
-                // add os novos itens e salva na tabela
-                pedido.Itens.Add(itemPedido);
-                await _pedidoRepository.AddItemAsync(itemPedido);
-
-                // atualiza o estoque do produto
-                var produto = await _produtoRepository.GetByIdAsync(item.ProdutoId);
-                produto.QuantidadeEstoque -= item.Quantidade;
-                await _produtoRepository.UpdateAsync(produto);
+                await _pedidoRepository.DeleteItenByIdAsync(item.ProdutoId);
             }
 
-            pedido.AtualizarTotal();
-            await _pedidoRepository.UpdateAsync(pedido);
+            if (!itensIguais)
+            {
+                var pedido = await _pedidoRepository.GetPedidoByIdAsync(pedidoDto.PedidoId);
 
-            // atualiza o valor total do pedido
-            await _pedidoRepository.UpdateTotalAsync(pedido.PedidoId, pedido.ValorTotal);
+                pedido.ClienteId = pedidoDto.ClienteId;
+                pedido.Status = "Atualizado";
+                pedido.DataPedido = DateTime.Now;
+
+
+                // adicionar os novos itens
+                foreach (var itemDto in pedidoDto.Itens)
+                {
+                    var itemExistente = historicoItens.FirstOrDefault(x => x.ProdutoId == itemDto.ProdutoId);
+
+                    if (itemExistente == null)
+                    {
+                        var itemPedido = new ItemPedido
+                        {
+                            PedidoId = pedido.PedidoId,
+                            ProdutoId = itemDto.ProdutoId,
+                            Quantidade = itemDto.Quantidade,
+                            PrecoUnitario = itemDto.PrecoUnitario
+                        };
+
+                        // até aqui esta funcionando!
+                        pedido.Itens.Add(itemPedido);
+                        await _pedidoRepository.AddItemAsync(itemPedido);
+                    }
+                    else if (itemExistente.Quantidade != itemDto.Quantidade)
+                    {
+                        // precisa atualizar o item para calcular o total
+                        await _pedidoRepository.UpdateItemAsync(itemDto.ItemId, itemDto.Quantidade);
+
+                        var item = new ItemPedido
+                        {
+                            ItemId = itemDto.ItemId,
+                            ProdutoId = itemDto.ProdutoId,
+                            Quantidade = itemDto.Quantidade,
+                            PrecoUnitario = itemDto.PrecoUnitario
+                        };
+
+                        pedido.Itens.Add(item);
+
+                        // atualiza o estoque
+                        var produto = await _produtoRepository.GetByIdAsync(itemExistente.ProdutoId);
+                        var estoqueAtual = item.Quantidade - itemExistente.Quantidade;
+                        produto.QuantidadeEstoque -= estoqueAtual;
+                        await _produtoRepository.UpdateAsync(produto);
+                    }
+
+                }
+
+                // Recarrega TODOS os itens do banco
+                pedido.Itens = await _pedidoRepository.GetItensByIdAsync(pedido.PedidoId);
+
+                pedido.AtualizarTotal();
+                await _pedidoRepository.UpdateAsync(pedido);
+
+                // atualiza o valor total do pedido
+                await _pedidoRepository.UpdateTotalAsync(pedido.PedidoId, pedido.ValorTotal);
+                Console.WriteLine($"Itens: {pedido.Itens.Count}");
+            }
 
         }
     }
