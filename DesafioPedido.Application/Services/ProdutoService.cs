@@ -35,6 +35,11 @@ namespace DesafioPedido.Application.Services
 
             try
             {
+                var produtoPossuiEmUmPedido = await _produtoRepository.VerificarProdutoAoPedido(id);
+
+                if (produtoPossuiEmUmPedido == true)
+                    return Result<string>.Fail("Você não pode remover o produto, pois ele esta relacionado a um pedido.");
+
                 var produto = await _produtoRepository.GetByIdAsync(id);
 
                 if (produto is null)

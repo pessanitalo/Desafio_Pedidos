@@ -11,5 +11,6 @@ namespace DesafioPedido.Domain.Interfaces
         Task UpdateAsync(Produto produto);
         Task UpdadeBalanceProductAsync(int produtoId, int quantidade);
         Task DeleteAsync(int id);
+        Task<bool> VerificarProdutoAoPedido(int id);
     }
 }

@@ -67,5 +67,23 @@ namespace DesafioPedido.Infrastructure.Repositories
 
             await _connection.ExecuteAsync(sql, new { ProdutoId = produtoId, quantidade = quantidade });
         }
+
+        public async Task<bool> VerificarProdutoAoPedido(int id)
+        {
+            const string sql = @"
+                SELECT CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM ItensPedido 
+                        WHERE ProdutoId = @Id
+                    ) 
+                    THEN 1 
+                    ELSE 0 
+                END";
+
+            var result = await _connection.ExecuteScalarAsync<int>(sql, new { Id = id });
+
+            return result == 1;
+        }
     }
 }
