@@ -4,11 +4,11 @@ namespace DesafioPedido.Domain.Interfaces
 {
     public interface IProdutoRepository
     {
-        Task CreateAsync(Produto cliente);
+        Task CreateAsync(Produto produto);
         Task<IEnumerable<Produto>> GetAllAsync();
         Task<IEnumerable<Produto>> GetProdutosDisponiveisAsync();
         Task<Produto> GetByIdAsync(int id);
-        Task UpdateAsync(Produto cliente);
+        Task UpdateAsync(Produto produto);
         Task UpdadeBalanceProductAsync(int produtoId, int quantidade);
         Task DeleteAsync(int id);
     }
