@@ -1,5 +1,4 @@
 ﻿using DesafioPedido.Application.DTOs;
-using DesafioPedido.Domain.Entities;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace DesafioPedido.Web.Models
@@ -14,8 +13,8 @@ namespace DesafioPedido.Web.Models
 
         // Listas para dropdown
         [ValidateNever]
-        public IEnumerable<Cliente> Clientes { get; set; }
+        public IEnumerable<ClienteDTO> Clientes { get; set; } // AQUI PODE SER DTO ?
         [ValidateNever]
-        public IEnumerable<Produto> Produtos { get; set; }
+        public IEnumerable<ProdutoDto> Produtos { get; set; }
     }
 }
