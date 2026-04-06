@@ -7,7 +7,7 @@ namespace DesafioPedido.Web.Models
     {
         public PedidoDTO Pedido { get; set; } = new();
         public int ClienteId { get; set; }
-        public IEnumerable<Cliente> Clientes { get; set; } = new List<Cliente>();
-        public IEnumerable<Produto> Produtos { get; set; } = new List<Produto>();
+        public IEnumerable<ClienteDTO> Clientes { get; set; } = new List<ClienteDTO>();
+        public IEnumerable<ProdutoDto> Produtos { get; set; } = new List<ProdutoDto>();
     }
 }

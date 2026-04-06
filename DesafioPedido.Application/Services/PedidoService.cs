@@ -4,6 +4,7 @@ using DesafioPedido.Domain.DTOs;
 using DesafioPedido.Domain.Entities;
 using DesafioPedido.Domain.Interfaces;
 using DesafioPedido.Domain.Validation;
+using Microsoft.Extensions.Logging;
 
 
 namespace DesafioPedido.Application.Services
@@ -12,11 +13,13 @@ namespace DesafioPedido.Application.Services
     {
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IProdutoRepository _produtoRepository;
+        private readonly ILogger<PedidoService> _logger;
 
-        public PedidoService(IPedidoRepository pedidoRepository, IProdutoRepository produtoRepository)
+        public PedidoService(IPedidoRepository pedidoRepository, IProdutoRepository produtoRepository, ILogger<PedidoService> logger)
         {
             _pedidoRepository = pedidoRepository;
             _produtoRepository = produtoRepository;
+            _logger = logger;
         }
 
         public async Task<Result<string>> AddAsync(PedidoDTO pedidoDTO)
@@ -52,6 +55,10 @@ namespace DesafioPedido.Application.Services
 
                 var pedidoId = await _pedidoRepository.CreateAsync(pedido);
 
+                _logger.LogInformation(
+                    "[NOTIFICAÇÃO] Pedido #{PedidoId} criado com sucesso. Status definido como '{Status}' em {DataPedido}.",
+                    pedidoId, pedido.Status, pedido.DataPedido);
+
                 foreach (var item in pedidoDTO.Itens)
                 {
                     var produto = await _produtoRepository.GetByIdAsync(item.ProdutoId);
@@ -70,6 +77,9 @@ namespace DesafioPedido.Application.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                  "[NOTIFICAÇÃO] Falha ao criar pedido para o cliente {ClienteId}.",
+                  pedidoDTO.ClienteId);
                 return Result<string>.Fail($"Não foi possível criar o pedido: {ex.Message}");
             }
         }
