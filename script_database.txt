@@ -1,0 +1,93 @@
+
+create database desafio_pedidos;
+use desafio_pedidos;
+
+
+CREATE TABLE Clientes (
+    ClienteId   INT           IDENTITY(1,1)  NOT NULL,
+    Nome        VARCHAR(150)                 NOT NULL,
+    Email       VARCHAR(255)                 NOT NULL,
+    Telefone    VARCHAR(20)                  NULL,
+    DataCadastro DATETIME     DEFAULT GETDATE() NOT NULL,
+
+    CONSTRAINT PK_Clientes PRIMARY KEY (ClienteId)
+);
+
+
+CREATE TABLE Produtos (
+    ProdutoId         INT           IDENTITY(1,1)  NOT NULL,
+    Nome              VARCHAR(150)                 NOT NULL,
+    Descricao         VARCHAR(255)                 NOT NULL,
+    Preco             DECIMAL(10,2)                NOT NULL,
+    QuantidadeEstoque INT                          NOT NULL,
+
+    CONSTRAINT PK_Produtos PRIMARY KEY (ProdutoId)
+);
+
+
+CREATE TABLE Pedidos (
+    PedidoId    INT           IDENTITY(1,1) NOT NULL,
+    ClienteId   INT                         NOT NULL,
+    DataPedido  DATETIME      DEFAULT GETDATE() NOT NULL,
+    ValorTotal  DECIMAL(10,2)               NOT NULL,
+    Status      VARCHAR(20)   DEFAULT 'Novo' NOT NULL,
+
+    CONSTRAINT PK_Pedidos PRIMARY KEY (PedidoId),
+    CONSTRAINT FK_Pedidos_Cliente FOREIGN KEY (ClienteId) REFERENCES Clientes(ClienteId)
+);
+
+CREATE TABLE ItensPedido (
+    ItemId        INT           IDENTITY(1,1) NOT NULL,
+    PedidoId      INT                         NOT NULL,
+    ProdutoId     INT                         NOT NULL,
+    Quantidade    INT                         NOT NULL,
+    PrecoUnitario DECIMAL(10,2)               NOT NULL,
+
+    CONSTRAINT PK_ItensPedido  PRIMARY KEY (ItemId),
+    CONSTRAINT FK_ItensPedido_Pedido  FOREIGN KEY (PedidoId)  REFERENCES Pedidos(PedidoId),
+    CONSTRAINT FK_ItensPedido_Produto FOREIGN KEY (ProdutoId) REFERENCES Produtos(ProdutoId)
+);
+
+
+
+INSERT INTO Clientes (Nome, Email, Telefone)
+VALUES 
+('João Silva', 'joao.silva@email.com', '11999990001'),
+('Maria Oliveira', 'maria.oliveira@email.com', '11999990002'),
+('Carlos Souza', 'carlos.souza@email.com', '11999990003'),
+('Ana Pereira', 'ana.pereira@email.com', '11999990004'),
+('Lucas Fernandes', 'lucas.fernandes@email.com', '11999990005');
+
+
+INSERT INTO Produtos (Nome, Descricao, Preco, QuantidadeEstoque)
+VALUES
+('Notebook Dell', 'Notebook i5 16GB RAM', 3500.00, 10),
+('Mouse Logitech', 'Mouse sem fio', 120.00, 50),
+('Teclado Mecânico', 'Teclado RGB ABNT2', 250.00, 30),
+('Monitor 24"', 'Monitor Full HD', 900.00, 20),
+('Headset Gamer', 'Headset com microfone', 300.00, 25);
+
+
+INSERT INTO Pedidos (ClienteId, ValorTotal, Status)
+VALUES
+(1, 3620.00, 'Novo'),
+(2, 370.00, 'Novo'),
+(3, 900.00, 'Processando'),
+(1, 300.00, 'Processando');
+
+
+INSERT INTO ItensPedido (PedidoId, ProdutoId, Quantidade, PrecoUnitario)
+VALUES
+-- Pedido 1 (João)
+(1, 1, 1, 3500.00), -- Notebook
+(1, 2, 1, 120.00),  -- Mouse
+
+-- Pedido 2 (Maria)
+(2, 3, 1, 250.00),  -- Teclado
+(2, 2, 1, 120.00),  -- Mouse
+
+-- Pedido 3 (Carlos)
+(3, 4, 1, 900.00),  -- Monitor
+
+-- Pedido 4 (João)
+(4, 5, 1, 300.00);  -- Headset
