@@ -7,8 +7,11 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DesafioPedido.Web.styles.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -33,6 +36,7 @@
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -44,9 +48,63 @@
             &copy; 2026 - DesafioPedido.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        @if (TempData["ToastMessage"] != null)
+        {
+            <text>
+                showToast('@Html.Raw(TempData["ToastMessage"])', '@TempData["ToastType"]');
+            </text>
+        }
+
+        function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+            
+        const bgColor = {
+        'success': 'bg-success',
+        'error': 'bg-danger',
+        'warning': 'bg-warning',
+        'info': 'bg-info'
+        }[type] || 'bg-info';
+
+        const title = {
+        'success': 'Sucesso',
+        'error': 'Erro',
+        'warning': 'Aviso',
+        'info': 'Informação'
+        }[type] || 'Informação';
+
+        const toastHTML = `
+        <div class="toast show" role="alert">
+        <div class="toast-header ${bgColor}">
+        <strong class="me-auto text-white">${title}</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+        ${message}
+        </div>
+        </div>
+        `;
+
+        const toastElement = document.createElement('div');
+        toastElement.innerHTML = toastHTML;
+        toastContainer.appendChild(toastElement.firstElementChild);
+
+        // Auto-dismiss após 5 segundos
+        setTimeout(() => {
+        const toast = toastContainer.querySelector('.toast');
+        if (toast) {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 150);
+        }
+        }, 5000);
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
