@@ -1,4 +1,6 @@
-﻿namespace DesafioPedido.Application.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DesafioPedido.Application.DTOs
 {
     public class PedidoDTO
     {
