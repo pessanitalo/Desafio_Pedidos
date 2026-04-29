@@ -1,0 +1,167 @@
+﻿@model DesafioPedido.Web.Models.EditarPedidoViewModel
+
+<div class="card shadow" style="max-width: 700px;">
+    <div class="card-header">
+        <h4>Editar Pedido</h4>
+    </div>
+
+    <div class="card-body">
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p class="mb-0">@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <form method="post" asp-action="Edit">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="PedidoId" value="@Model.PedidoId" />
+
+            <!-- Cliente -->
+            <div class="mb-3">
+                <label class="form-label">Cliente</label>
+                <select asp-for="ClienteId"
+                        asp-items="@(new SelectList(Model.Clientes, "ClienteId", "Nome"))"
+                        class="form-select">
+                    <option value="">Selecione um cliente...</option>
+                </select>
+            </div>
+
+            <!-- Itens do Pedido -->
+            <label class="form-label">Produtos</label>
+            <div id="itens">
+                @for (int i = 0; i < Model.Itens.Count; i++)
+                {
+                    <div class="row g-2 mb-2 item-pedido">
+                        <input type="hidden" name="Itens[@i].ItemId" value="@Model.Itens[i].ItemId" />
+                        <div class="col-7">
+                            <select name="Itens[@i].ProdutoId" class="form-select produto-select">
+                                <option value="">Selecione um produto...</option>
+                                @foreach (var produto in Model.Produtos)
+                                {
+                                    <option value="@produto.ProdutoId"
+                                            data-preco="@produto.Preco.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                                            data-estoque="@produto.QuantidadeEstoque"
+                                            selected="@(produto.ProdutoId == Model.Itens[i].ProdutoId)">
+                                        @produto.Nome — R$ @produto.Preco.ToString("F2") (Estoque: @produto.QuantidadeEstoque)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <input type="hidden"
+                               name="Itens[@i].PrecoUnitario"
+                               class="preco-unitario-input"
+                               value="@Model.Itens[i].PrecoUnitario.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" />
+                        <div class="col-3">
+                            <input type="number" name="Itens[@i].Quantidade"
+                                   class="form-control quantidade-input"
+                                   placeholder="Qtd" min="1" value="@Model.Itens[i].Quantidade" />
+                        </div>
+                        <div class="col-2 d-flex align-items-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removerItem(this)">✕</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="adicionarItem()">
+                + Adicionar Produto
+            </button>
+
+            <!-- Total -->
+            <div class="alert alert-light border">
+                <strong>Total: R$ <span id="valorTotal">0,00</span></strong>
+            </div>
+
+            <button type="submit" class="btn btn-success">Salvar Pedido</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const produtos = {
+            @foreach (var p in Model.Produtos)
+            {
+                @:@p.ProdutoId: { preco: @p.Preco.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), estoque: @p.QuantidadeEstoque },
+            }
+        };
+
+        let indice = @Model.Itens.Count;
+
+        function adicionarItem() {
+            const template = document.querySelector('.item-pedido').cloneNode(true);
+
+            template.querySelectorAll('select, input').forEach(el => {
+                el.name = el.name.replace(/\[\d+\]/, `[${indice}]`);
+
+                if (el.classList.contains('quantidade-input')) {
+                    el.value = 1;
+                } else if (el.classList.contains('preco-unitario-input')) {
+                    el.value = 0;
+                } else if (el.name.includes('ItemId')) {
+                    el.value = 0; 
+                } else {
+                    el.value = '';
+                }
+            });
+
+            template.querySelectorAll('option').forEach(opt => opt.removeAttribute('selected'));
+            template.querySelector('.produto-select').value = '';
+
+            document.getElementById('itens').appendChild(template);
+            indice++;
+            recalcularTotal();
+        }
+
+        function removerItem(btn) {
+            const itens = document.querySelectorAll('.item-pedido');
+            if (itens.length > 1) {
+                btn.closest('.item-pedido').remove();
+                recalcularTotal();
+            }
+        }
+
+        function recalcularTotal() {
+            let total = 0;
+            document.querySelectorAll('.item-pedido').forEach(item => {
+                const produtoId = item.querySelector('.produto-select').value;
+                const qtd = parseInt(item.querySelector('.quantidade-input').value) || 0;
+                if (produtoId && produtos[produtoId]) {
+                    total += produtos[produtoId].preco * qtd;
+                }
+            });
+            document.getElementById('valorTotal').innerText = total.toFixed(2).replace('.', ',');
+        }
+
+        function atualizarPreco(item) {
+            const select = item.querySelector('.produto-select');
+            const selectedOption = select.options[select.selectedIndex];
+            const preco = selectedOption ? (selectedOption.dataset.preco || '0') : '0';
+
+            const inputPreco = item.querySelector('.preco-unitario-input');
+            if (inputPreco) inputPreco.value = preco;
+        }
+
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('produto-select')) {
+                const item = e.target.closest('.item-pedido');
+                atualizarPreco(item);
+            }
+            recalcularTotal();
+        });
+
+        document.addEventListener('input', recalcularTotal);
+
+        document.querySelectorAll('.item-pedido').forEach(item => {
+            atualizarPreco(item);
+        });
+
+        recalcularTotal();
+    </script>
+}

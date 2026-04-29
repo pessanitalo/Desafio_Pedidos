@@ -1,0 +1,209 @@
+﻿@model DesafioPedido.Web.Models.ListarPedidosViewModel
+
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Pedidos</h4>
+        <a asp-action="Create" class="btn btn-success btn-sm">+ Novo Pedido</a>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-2 mb-3">
+            <!-- Busca por Cliente -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" />
+                        </svg>
+                    </span>
+                    <input type="text" id="filtroCliente"
+                           class="form-control border-start-0" placeholder="Buscar por cliente..." />
+                </div>
+            </div>
+
+            <!-- Filtro por Status -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
+                        </svg>
+                    </span>
+                    <select id="filtroStatus" class="form-select border-start-0">
+                        <option value="">Todos os status</option>
+                        <option value="Novo">Novo</option>
+                        <option value="Processando">Processando</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Contador + Limpar -->
+            <div class="col-md-2 d-flex align-items-center">
+                <span id="contadorResultados" class="text-muted small"></span>
+            </div>
+            <div class="col-md-2">
+                <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary w-100">Limpar</button>
+            </div>
+        </div>
+
+        <!-- Aviso de nenhum resultado -->
+        <div id="semResultados" class="text-center text-muted py-4 d-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16" class="mb-2 d-block mx-auto">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM2.5 6.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0z" />
+            </svg>
+            Nenhum pedido encontrado para os filtros aplicados.
+        </div>
+
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Data</th>
+                    <th>Valor Total</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pedido in Model.Pedidos)
+                {
+                    <tr data-cliente="@pedido.NomeCliente.ToLower()" data-status="@pedido.Status">
+                        <td>@pedido.PedidoId</td>
+                        <td>@pedido.NomeCliente</td>
+                        <td>@pedido.DataPedido.ToString("dd/MM/yyyy")</td>
+                        <td>R$ @pedido.ValorTotal.ToString("F2")</td>
+                        <td>
+                            @{
+                                var badge = pedido.Status switch
+                                {
+                                    "Novo" => "bg-primary",
+                                    "Processando" => "bg-warning text-dark",
+                                    "Finalizado" => "bg-success",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badge">@pedido.Status</span>
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Details" asp-route-id="@pedido.PedidoId"
+                                   class="btn btn-sm btn-primary">
+                                Detalhes
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@pedido.PedidoId"
+                                   class="btn btn-sm btn-warning">
+                                Editar
+                            </a>
+                            <button class="btn btn-sm btn-danger"
+                                    data-id="@pedido.PedidoId"
+                                    data-nome="@pedido.NomeCliente"
+                                    onclick="abrirModalExcluir(this)">
+                                Excluir
+                            </button>
+                        </td>
+                    </tr>
+                }
+                <script>
+                                    const filtroCliente = document.getElementById('filtroCliente');
+                                    const filtroStatus  = document.getElementById('filtroStatus');
+                                    const btnLimpar     = document.getElementById('btnLimparFiltros');
+                                    const contador      = document.getElementById('contadorResultados');
+                                    const semResultados = document.getElementById('semResultados');
+
+                                    function aplicarFiltros() {
+                                        const cliente = filtroCliente.value.toLowerCase().trim();
+                                        const status  = filtroStatus.value;
+
+                                        const linhas = document.querySelectorAll('tbody tr');
+                                        let visiveis = 0;
+
+                                        linhas.forEach(tr => {
+                                            const nomeCliente = tr.dataset.cliente || '';
+                                            const statusPedido = tr.dataset.status || '';
+
+                                            const matchCliente = cliente === '' || nomeCliente.includes(cliente);
+                                            const matchStatus  = status  === '' || statusPedido === status;
+
+                                            if (matchCliente && matchStatus) {
+                                                tr.classList.remove('d-none');
+                                                visiveis++;
+                                            } else {
+                                                tr.classList.add('d-none');
+                                            }
+                                        });
+
+                                        // Atualiza contador
+                                        const total = linhas.length;
+                                        contador.textContent = visiveis === total
+                                            ? `${total} pedido(s)`
+                                            : `${visiveis} de ${total} pedido(s)`;
+
+                                        // Mostra aviso se não houver resultados
+                                        semResultados.classList.toggle('d-none', visiveis > 0);
+                                    }
+
+                                    function limparFiltros() {
+                                        filtroCliente.value = '';
+                                        filtroStatus.value  = '';
+                                        aplicarFiltros();
+                                    }
+
+                                    filtroCliente.addEventListener('input', aplicarFiltros);
+                                    filtroStatus.addEventListener('change', aplicarFiltros);
+                                    btnLimpar.addEventListener('click', limparFiltros);
+
+                                    // Inicializa o contador ao carregar
+                                    aplicarFiltros();
+                </script>
+            </tbody>
+        </table>
+        <!-- Modal de Confirmação -->
+        <div class="modal fade" id="modalExcluir" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmar Exclusão</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        Tem certeza que deseja excluir o pedido <strong id="nomePedidoModal"></strong>?
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <form id="formExcluir" method="post" asp-controller="Pedido" asp-action="Delete">
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit" class="btn btn-danger">
+                                Excluir
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+ 
+    </div>
+</div>
+@section Scripts {
+    <script>
+         function abrirModalExcluir(btn) {
+            const id   = btn.dataset.id;
+            const nome = btn.dataset.nome;
+
+            document.getElementById('nomePedidoModal').innerText = nome;
+            document.getElementById('formExcluir').action = '/Pedido/Delete/' + id;
+
+            var modal = new bootstrap.Modal(document.getElementById('modalExcluir'));
+            modal.show();
+        }
+    </script>
+}

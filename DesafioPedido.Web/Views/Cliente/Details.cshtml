@@ -1,0 +1,15 @@
+﻿@model DesafioPedido.Domain.Entities.Cliente
+
+<div class="card" style="max-width: 500px;">
+    <div class="card-header">
+        <h4>@Model.Nome</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Telefone:</strong> @Model.Telefone</p>
+        <p><strong>Cadastrado em:</strong> @Model.DataCadastro.ToString("dd/MM/yyyy")</p>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>

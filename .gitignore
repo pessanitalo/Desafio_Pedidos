@@ -1,0 +1,182 @@
+# Diretórios de build e output
+bin/
+obj/
+out/
+
+# Diretórios de publicação
+publish/
+PublishProfiles/
+
+# Arquivos de solução Visual Studio
+.vs/
+.vscode/
+.idea/
+
+# Arquivos de usuário do Visual Studio
+*.sln.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Diretórios de testes
+TestResults/
+coverage/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!packages/repositories.config
+.nupkg
+
+# Pasta local de pacotes
+.packages/
+
+# Arquivos de cache do Visual Studio
+.vs/
+.vscode/extensions/
+
+# Rider (JetBrains IDEs)
+.idea/
+.idea_modules/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Arquivos de configuração local
+appsettings.local.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+!appsettings.json
+
+# Arquivos temporários
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Arquivos de log
+*.log
+logs/
+
+# Arquivos de banco de dados local
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+App_Data/
+
+# Arquivos de segurança
+secrets.json
+.env
+.env.local
+.env.*.local
+
+# Arquivos gerados
+*.Generated.cs
+GeneratedCode/
+
+# Arquivos de cobertura de testes
+OpenCover/
+coverage/
+CodeCoverage/
+
+# Artifacts de CI/CD
+artifacts/
+.artifacts/
+
+# Pastas de ferramentas
+tools/
+
+# Arquivos do ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# StyleCop
+StyleCopReport.xml
+
+# Análise de código
+CodeAnalysisLog.xml
+CodeAnalysisReport.xml
+
+# Arquivos de compilação do MSBuild
+*.metaproj
+*.metaproj.tmp
+*.msbuildstate
+
+# Arquivos temporários do Node (se usar ferramentas JS)
+node_modules/
+npm-debug.log
+package-lock.json
+yarn-lock.json
+
+# wwwroot publicado (se necessário)
+wwwroot/lib/
+wwwroot/dist/
+wwwroot/*.bundle.js
+wwwroot/*.bundle.css
+
+# Arquivos de upload temporários
+Uploads/
+uploads/
+UserFiles/
+
+# Certificados e chaves
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer
+
+# Arquivos do macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Arquivos do Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Diretórios específicos de desenvolvimento
+.Rhistory
+.RData
+.Ruserdata
+
+# Fakes/Stubs gerados pelo projeto
+Fakes/
+
+# LocalDB
+*.mdf
+*.ldf
+
+# Arquivo de sincronização de projeto
+ProjectSync.log
+
+# Diretórios de dados específicos
+Data/
+data/
+Downloads/
+
+# Arquivos de backup
+*.bak
+*.backup
+~*
+
+# Arquivos do bootstrap
+**/*.map
+wwwroot/lib/bootstrap/dist/**/*.map
+*.css
+wwwroot/lib/

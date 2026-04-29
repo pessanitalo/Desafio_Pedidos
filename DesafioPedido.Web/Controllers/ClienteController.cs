@@ -1,0 +1,120 @@
+﻿using DesafioPedido.Application.DTOs;
+using DesafioPedido.Application.Interfaces;
+using DesafioPedido.Web.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DesafioPedido.Web.Controllers
+{
+    public class ClienteController : Controller
+    {
+        private readonly IClienteInterface clienteInterface;
+
+        public ClienteController(IClienteInterface clienteInterface)
+        {
+            this.clienteInterface = clienteInterface;
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Index(string? nome, string? email)
+        {
+            var result = await clienteInterface.GetAllAsync(nome, email);
+            var vm = new ListarClientesViewModel
+            {
+                Clientes = result.Data,
+                NomeFiltro = nome,
+                EmailFiltro = email
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(ClienteDTO cliente)
+        {
+            if (!ModelState.IsValid)
+                return View(cliente);
+
+            await clienteInterface.AddAsync(cliente);
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var result = await clienteInterface.GetByIdAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao pesquisar o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+            return View(result.Data);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var result = await clienteInterface.GetByIdAsync(id);
+
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao pesquisar o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+
+            var clienteDTO = new ClienteDTO
+            {
+                ClienteId = result.Data.ClienteId,
+                Nome = result.Data.Nome,
+                Email = result.Data.Email,
+                Telefone = result.Data.Telefone
+            };
+
+            return View(clienteDTO);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ClienteDTO dt)
+        {
+            var result = await clienteInterface.UpdateAsync(dt);
+
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Erro ao atualizar cliente";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+
+            TempData["ToastMessage"] = result.Data ?? "Cliente atualizado com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await clienteInterface.DeleteAsync(id);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.Error ?? "Não foi possível excluir o cliente.";
+                TempData["ToastType"] = "error";
+                TempData.Keep();
+                return RedirectToAction("Index");
+            }
+            TempData["ToastMessage"] = result.Data ?? "Cliente excluido com sucesso.";
+            TempData["ToastType"] = "success";
+            TempData.Keep();
+            return RedirectToAction("Index");
+        }
+    }
+}
